@@ -83,6 +83,7 @@ app.post("/api/register", async (req, res) => {
       email: req.body.email,
       passwordHash: hash,
       role: req.body.role,
+      department: req.body.department,
     });
 
     const user = await doc.save();
@@ -174,6 +175,8 @@ app.post("/api/createPersonalTask", checkAuth, async (req, res) => {
       user: req.userId,
       fileUrl: req.body.fileUrl,
       fileUrlDepartment: req.body.fileUrlDepartment,
+      department: req.body.department,
+      status: req.body.status,
     });
 
     const post = await doc.save();
@@ -203,6 +206,57 @@ app.get("/api/AuthMe", checkAuth, async (req, res) => {
     res.status(404).json({
       message: "User in not found",
     });
+  }
+});
+
+app.get("/api/tasks", async (req, res) => {
+  try {
+    const tasks = await TaskModel.find()
+      // .sort({ createdAt: -1 })
+      .populate("user");
+
+    res.json(tasks);
+  } catch (error) {
+    console.log(error);
+  }
+});
+
+app.patch("/api/changeStatus/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const updatedTask = await TaskModel.findByIdAndUpdate(
+      id,
+      { status },
+      { new: true }
+    );
+
+    if (!updatedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json(updatedTask);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to update task status" });
+  }
+});
+
+app.delete("/api/deleteTask/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const deletedTask = await TaskModel.findByIdAndDelete(id);
+
+    if (!deletedTask) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    res.json({ message: "Task deleted successfully", id });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to delete task" });
   }
 });
 

@@ -19,6 +19,15 @@ const TaskSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
+    department: {
+      type: String,
+      required: false,
+    },
+
+    status: {
+      type: String,
+      default: "W toku",
+    },
   },
   {
     timestamps: true,
